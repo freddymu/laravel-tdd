@@ -21,4 +21,33 @@ class Book extends Model
         ]))->id;
     }
 
+    public function checkout($user)
+    {
+        $this->reservations()->create([
+            'checked_out_at' => now(),
+            'user_id' => $user->id
+        ]);
+    }
+
+    public function checkin($user)
+    {
+        $reservation = $this->reservations()->where('user_id', $user->id)
+            ->whereNotNull('checked_out_at')
+            ->whereNull('checked_in_at')
+            ->first();
+
+        if ($reservation === null) {
+            throw new \Exception('');
+        }
+
+        $reservation->update([
+            'checked_in_at' => now()
+        ]);
+    }
+
+    public function reservations()
+    {
+        return $this->hasMany(Reservation::class);
+    }
+
 }
